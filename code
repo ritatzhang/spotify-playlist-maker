@@ -1,0 +1,68 @@
+query = "https://api.spotify.com/v1/users/{}/playlists".format(
+            self.user_id)
+
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(spotify_token)
+            }
+        )
+
+        response_json = response.json()
+        print(response.status_code)
+        playlist = response_json["items"]
+        for playlist in playlists['items']:
+        print(playlist['name'])
+        # I only care about playlists created by the user
+        for p in playlist:
+            if p["owner"]["id"] != self.user_id:
+                playlist.remove(p)
+
+        # for each song in the playlist, I only need the uri
+       # print(playlist[0]["id"])
+        for p in playlist:
+            # print(p["owner"])
+            print(p["name"])
+            #songs = p["tracks"]
+            # print(songs)
+            # for s in songs:
+            # self.all_songs.append(s["track"]["uri"])
+            self.get_songs_from_playlist(p["id"])
+
+            request_data = json.dumps(self.union_songs)
+
+        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
+            playlist_id)
+
+        response = requests.post(
+            query,
+            data=request_data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(spotify_token)
+            }
+        )
+
+        # check for valid response status
+        if response.status_code != 200:
+            print("good")
+
+        response_json = response.json()
+        return response_json
+
+        toAdd = []
+        ctr = 0
+        for i in range(len(self.union_songs)):
+            a = []
+            for i in range(min(ctr+100, len(self.union_songs))):
+                a.append(self.union_songs[i])
+                i += 1
+            toAdd.append(a)
+            ctr += 100
+
+            playlist_id = self.create_playlist()
+        sp = spotipy.Spotify(spotify_token2)
+        # for songs in toAdd:
+        sp.user_playlist_add_tracks(
+            self.user_id, playlist_id, union)
