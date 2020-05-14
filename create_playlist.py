@@ -117,7 +117,7 @@ class CreatePlaylist:
 
         # spotify does not let you add >100 songs to a playlist per iteration
         union = []
-        x = len(self.union_songs)/100
+
         a = []
         count = 0
         for elem in iter(self.union_songs):

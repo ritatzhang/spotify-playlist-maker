@@ -3,6 +3,7 @@
 # spotify_token2 =
 # spotify_other_id =
 
+
 spotify_token = "BQBLHrwlET4-LSP0XG5zEu1di7nV0h0O7xliVeQxTFhhpYrTZLpLHiqnSGJ92YkKrQLvOOhL-ebb4tJ9DbuCx3EGH6rleOkqsAxRsgS4YjTDcg0RX1duG5dzWR2kKX7Uvh_mUClUUaUSNh-v6DQseNVOIv0o2kERci33LSqYJUYDhXC--5qHpZMWVDjzLaw4OYl5hQGE9STn1dPdUCXZH7uoti10yy_TbUxC62y_8gJ3FxkR7cOOZhhW6EuTmw"
 spotify_user_id = "irishmannn"
 

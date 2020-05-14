@@ -1,3 +1,9 @@
+# if __name__ == '__main__':
+cp = CreatePlaylist()
+# cp.add_song()
+cp.add_song()
+
+
 query = "https://api.spotify.com/v1/users/{}/playlists".format(
             self.user_id)
 
@@ -66,3 +72,9 @@ query = "https://api.spotify.com/v1/users/{}/playlists".format(
         # for songs in toAdd:
         sp.user_playlist_add_tracks(
             self.user_id, playlist_id, union)
+
+
+@app.route("/callback")
+def test():
+    i += 1
+    return "good"
