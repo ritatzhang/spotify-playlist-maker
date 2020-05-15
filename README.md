@@ -20,3 +20,14 @@ after you get the token, put it into the secrets.py file along with the username
 then just run
 
 python3 create_playlist.py
+
+running the python script alone only requires create_playlist.py and secrets.py
+
+**UPDATED**
+
+i've now moved this python script to a fully developed web app! you can check it out here:
+
+http://spotify-ultimate-playlist.herokuapp.com/
+
+to run locally, git clone this repo and you can run python3 app.py to see the app run on localhost:5000
+
