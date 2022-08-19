@@ -34,9 +34,10 @@ CLIENT_SECRET = CLIENT['secret']
 # server side parameter
 # * fell free to change it if you want to, but make sure to change in
 # your spotify dev account as well *
-CLIENT_SIDE_URL = "http://127.0.0.1"
-PORT = 8081
-REDIRECT_URI = "{}:{}/callback/".format(CLIENT_SIDE_URL, PORT)
+# CLIENT_SIDE_URL = "http://127.0.0.1"
+# PORT = 8081
+# REDIRECT_URI = "{}:{}/callback/".format(CLIENT_SIDE_URL, PORT)
+REDIRECT_URI = "http://spotify-ultimate-playlist.herokuapp.com/callback"
 SCOPE = "playlist-modify-public playlist-modify-private user-read-private user-library-read playlist-read-private user-library-modify playlist-read-collaborative user-follow-modify"
 STATE = ""
 SHOW_DIALOG_bool = True
