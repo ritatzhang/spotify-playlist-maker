@@ -51,7 +51,7 @@ auth_query_parameters = {
     "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
-
+print(REDIRECT_URI)
 # python 3
 if sys.version_info[0] >= 3:
     URL_ARGS = "&".join(["{}={}".format(key, urllibparse.quote(val))
