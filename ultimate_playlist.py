@@ -23,6 +23,7 @@ class CreatePlaylist:
     def add_tracks(self, results):
         for item in results['items']:
             track = item['track']
+            # print(track['name'])
             self.all_songs.add(track['uri'])
 
     def add_tracks2(self, results):
@@ -45,7 +46,7 @@ class CreatePlaylist:
         print(len(self.other_all_songs))
         print(len(self.union_songs))
         # for song in self.union_songs:
-        # print(song)
+        #     print(song)
 
         # spotify does not let you add >100 songs to a playlist per iteration
         union = []
@@ -61,11 +62,10 @@ class CreatePlaylist:
 
         # had to do this cuz spotify only lets you add 100 songs at a time
         for songs in union:
-
             request_data = json.dumps(songs)
             query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
                 playlist_id)
-
+            print(request_data)
             response = requests.post(
                 query,
                 data=request_data,

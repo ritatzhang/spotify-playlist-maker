@@ -10,96 +10,105 @@
 from flask import Flask, request, redirect, g, render_template, session
 from spotify_requests import spotify
 from ultimate_playlist import CreatePlaylist
+from data import mongo, users
+from urllib.parse import urlencode
 
 app = Flask(__name__)
 app.secret_key = 'some key for session'
+# app.config["MONGODB_DB"] = 'app12345678'
 
 # ----------------------- AUTH API PROCEDURE -------------------------
 ult_playlist = CreatePlaylist()
-ctr = [0]
-users = []
-
-
-@app.route("/auth")
-def auth():
-    return redirect(spotify.AUTH_URL)
-
-
-@app.route("/callback/")
-def callback():
-
-    auth_token = request.args['code']
-    auth_header = spotify.authorize(auth_token)
-    session['auth_header'] = auth_header
-
-    return profile()
-
-
-def valid_token(resp):
-    return resp is not None and not 'error' in resp
-
-# -------------------------- API REQUESTS ----------------------------
-
+ctr = [2]
+user_ids = []
+# url = 'http://127.0.0.1:8081/'
+url = "http://spotify-ultimate-playlist.herokuapp.com/"
+user1_db = 0
+playlist_id = 0
 
 @app.route("/")
 def index():
     return render_template('index.html')
 
+@app.route("/auth1")
+def auth1():
+    return redirect(spotify.AUTH_URL1)
 
-@app.route('/profile')
-def profile():
+@app.route("/auth2")
+def auth2():
+    return redirect(spotify.AUTH_URL2)
 
-    if 'auth_header' in session:
+def valid_token(resp):
+    return resp is not None and not 'error' in resp
 
-        # auth_header = session['auth_header']
+
+@app.route("/callback")
+def callback():
+    auth_token = request.args['code']
+    token, auth_header = spotify.authorize(auth_token,0)
+    session['auth_header'] = auth_header
+
+    user = spotify.get_users_profile_auth(auth_header)
+
+    userid = mongo.store_user_auth(user['id'], user['display_name'], token, auth_header)
+    user1 = {'id': userid}
+    share_link = url + 'share?' + urlencode(user1)
+    return render_template('first_auth.html', link=share_link)
+
+@app.route("/callback2")
+def callback2():
+    auth_token = request.args['code']
+    token, auth_header = spotify.authorize(auth_token,1)
+    session['auth_header'] = auth_header
+    user = spotify.get_users_profile_auth(auth_header)
+
+    global playlist_id
+    playlist_id = spotify.create_playlist(user['id'], token)
+    try:
+        ult_playlist.make_playlist_collaborative(token, playlist_id, user['id'])
+    except:
+        return 'something went wrong, try again!'
+    return create_playlist(token, auth_header)
+
+def create_playlist(token2, header2):
+    global user1_db
+    user1 = users.User.objects(id=user1_db).first()
+    spotify.set_auth(user1.header, header2, user1.token, token2)
+    
+    for i in range(ctr[0]):
         # get profile data
-        profile_data = spotify.get_users_profile(ctr[0])
+        profile_data = spotify.get_users_profile(i)
 
         # get user playlist data
-        playlist_data = spotify.get_users_playlists(ctr[0])
-
+        playlist_data = spotify.get_users_playlists(i)
         user_id = profile_data['id']
-        # user_id = profile_data.id
-        users.append(user_id)
+        user_ids.append(user_id)
+
         for play in playlist_data['items']:
-            if(ctr[0] == 0):
-                ult_playlist.add_tracks(
-                    spotify.get_playlist_tracks(play['id'], ctr[0]))
-            else:
-                ult_playlist.add_tracks2(
-                    spotify.get_playlist_tracks(play['id'], ctr[0]))
+            if play['owner']['id'] == user_id:
+                if(i == 0):
+                    ult_playlist.add_tracks(
+                        spotify.get_playlist_tracks(play['id'], i))
+                else:
+                    ult_playlist.add_tracks2(
+                        spotify.get_playlist_tracks(play['id'], i))
 
-        if(ctr[0] == 0):
-            ult_playlist.add_tracks(spotify.get_user_tracks(user_id, ctr[0]))
+        if(i == 0):
+            ult_playlist.add_tracks(spotify.get_user_tracks(user_id, i))
         else:
-            ult_playlist.add_tracks2(spotify.get_user_tracks(user_id, ctr[0]))
+            ult_playlist.add_tracks2(spotify.get_user_tracks(user_id, i))
 
-        ctr[0] = ctr[0]+1
-    if ctr[0] == 1:
-        return render_template('first_auth.html')
-    elif ctr[0] == 2:
-        return render_template('second_auth.html')
-
-    return render_template('index.html')
-
-
-@app.route('/create_playlist')
-def create_playlist():
-    if len(users) != 2:
-        return 'bad! authorizations incomplete, go back and try again'
-
-    if 'auth_header' in session:
-
-        playlist_id = spotify.create_playlist(users[0])
-        auth_token = spotify.get_auth_token()
-        ult_playlist.add_song(playlist_id, auth_token)
-        ult_playlist.make_playlist_collaborative(
-            auth_token, playlist_id, users[0])
-        spotify.follow_playlist(playlist_id)
-        # if valid_token(hot):
-        # return render_template('featured_playlists.html', hot=hot)
-
+    global playlist_id
+    ult_playlist.add_song(playlist_id, token2)
+    spotify.follow_playlist(playlist_id, user1.header)
     return render_template('finish.html')
+
+
+@app.route("/share")
+def share():
+    global user1_db
+    user1_db = request.args.get('id')
+    return render_template('second_auth.html')
 
 
 if __name__ == "__main__":

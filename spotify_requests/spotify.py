@@ -32,11 +32,10 @@ CLIENT_ID = CLIENT['id']
 CLIENT_SECRET = CLIENT['secret']
 
 # server side parameter
-# * fell free to change it if you want to, but make sure to change in
-# your spotify dev account as well *
-# CLIENT_SIDE_URL = "http://127.0.0.1"
-# PORT = 8081
-# REDIRECT_URI = "{}:{}/callback/".format(CLIENT_SIDE_URL, PORT)
+# * feel free to change it if you want to, but make sure to change in your spotify dev account as well *
+CLIENT_SIDE_URL = "http://127.0.0.1"
+PORT = 8081
+# REDIRECT_URI = ["{}:{}/callback".format(CLIENT_SIDE_URL, PORT),"{}:{}/callback2".format(CLIENT_SIDE_URL, PORT)]
 REDIRECT_URI = "http://spotify-ultimate-playlist.herokuapp.com/callback"
 SCOPE = "playlist-modify-public playlist-modify-private user-read-private user-library-read playlist-read-private user-library-modify playlist-read-collaborative user-follow-modify"
 STATE = ""
@@ -44,25 +43,31 @@ SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
 # https://developer.spotify.com/web-api/authorization-guide/
-auth_query_parameters = {
+auth_query_parameters1 = {
     "response_type": "code",
-    "redirect_uri": REDIRECT_URI,
+    "redirect_uri": REDIRECT_URI[0],
     "scope": SCOPE,
     # "state": STATE,
     "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
-print(REDIRECT_URI)
-# python 3
-if sys.version_info[0] >= 3:
-    URL_ARGS = "&".join(["{}={}".format(key, urllibparse.quote(val))
-                         for key, val in list(auth_query_parameters.items())])
-else:
-    URL_ARGS = "&".join(["{}={}".format(key, urllibparse.quote(val))
-                         for key, val in auth_query_parameters.items()])
 
+auth_query_parameters2 = {
+    "response_type": "code",
+    "redirect_uri": REDIRECT_URI[1],
+    "scope": SCOPE,
+    # "state": STATE,
+    "show_dialog": SHOW_DIALOG_str,
+    "client_id": CLIENT_ID
+}
 
-AUTH_URL = "{}/?{}".format(SPOTIFY_AUTH_URL, URL_ARGS)
+URL_ARGS1 = "&".join(["{}={}".format(key, urllibparse.quote(val))
+                         for key, val in list(auth_query_parameters1.items())])
+AUTH_URL1 = "{}/?{}".format(SPOTIFY_AUTH_URL, URL_ARGS1)
+
+URL_ARGS2 = "&".join(["{}={}".format(key, urllibparse.quote(val))
+                         for key, val in list(auth_query_parameters2.items())])
+AUTH_URL2 = "{}/?{}".format(SPOTIFY_AUTH_URL, URL_ARGS2)
 
 '''
     This function must be used with the callback method present in the
@@ -75,12 +80,12 @@ ACCESS_TOKEN = []
 AUTH_HEAD = []
 
 
-def authorize(auth_token):
+def authorize(auth_token, x):
 
     code_payload = {
         "grant_type": "authorization_code",
         "code": str(auth_token),
-        "redirect_uri": REDIRECT_URI
+        "redirect_uri": REDIRECT_URI[x]
     }
 
     # python 3 or above
@@ -99,16 +104,15 @@ def authorize(auth_token):
     # tokens are returned to the app
     response_data = json.loads(post_request.text)
     token = response_data["access_token"]
-    ACCESS_TOKEN.append(token)
-
+    
     # use the access token to access Spotify API
     auth_header = {"Authorization": "Bearer {}".format(token)}
-    AUTH_HEAD.append(auth_header)
-    return auth_header
+    # print("AUTH")
+    # print(response_data)
+    return token, auth_header
 
 
 # ------------------ USER RELATED REQUESTS  ---------- #
-
 
 # spotify endpoints
 USER_PROFILE_ENDPOINT = "{}/{}".format(SPOTIFY_API_URL, 'me')
@@ -117,11 +121,17 @@ GET_PLAYLISTS_ENDPOINT = "{}/{}".format(SPOTIFY_API_URL, 'playlists')
 
 # https://developer.spotify.com/web-api/get-a-list-of-current-users-playlists/
 
+def set_auth(auth_head_1, auth_head_2, token1, token2):
+    AUTH_HEAD.append(auth_head_1)
+    AUTH_HEAD.append(auth_head_2)
+    ACCESS_TOKEN.append(token1)
+    ACCESS_TOKEN.append(token2)
+
 
 def get_users_playlists(x):
     auth_header = AUTH_HEAD[x]
     url = USER_PLAYLISTS_ENDPOINT
-    resp = requests.get(url, headers=auth_header)
+    resp = requests.get(url + "?limit=50", headers=auth_header)
     return resp.json()
 
 
@@ -144,6 +154,10 @@ def get_users_profile(x):
     resp = requests.get(url, headers=auth_header)
     return resp.json()
 
+def get_users_profile_auth(auth_header):
+    url = USER_PROFILE_ENDPOINT
+    resp = requests.get(url, headers=auth_header)
+    return resp.json()
 
 def get_user_tracks(user_id, x):
     auth_header = AUTH_HEAD[x]
@@ -158,7 +172,7 @@ POST_PLAYLIST_URL = '{}/{}'.format(SPOTIFY_API_URL, 'users')
 def create_playlist(user_id):
     #auth_header = AUTH_HEAD[0]
     request_body = json.dumps({
-        "name": "your new playlist!!",
+        "name": "your ultimate playlist!!",
         "description": "all of your shared favorite songs!",
         "public": False
     })
@@ -174,7 +188,27 @@ def create_playlist(user_id):
         }
     )
     response_json = response.json()
+    playlist_id = response_json["id"]
+    return playlist_id
 
+def create_playlist(user_id, token):
+    request_body = json.dumps({
+        "name": "your new playlist!!",
+        "description": "all of your shared favorite songs!",
+        "public": False
+    })
+
+    query = "https://api.spotify.com/v1/users/{}/playlists".format(user_id)
+
+    response = requests.post(
+        query,
+        data=request_body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {}".format(token)
+        }
+    )
+    response_json = response.json()
     playlist_id = response_json["id"]
 
     return playlist_id
@@ -184,8 +218,7 @@ def get_auth_token():
     return AUTH_HEAD[0]
 
 
-def follow_playlist(playlist_id):
-    auth_header = AUTH_HEAD[1]
+def follow_playlist(playlist_id, auth_header):
     url = "{}/{id}/followers".format(GET_PLAYLISTS_ENDPOINT, id=playlist_id)
     requests.put(url, headers=auth_header)
     return 'good'

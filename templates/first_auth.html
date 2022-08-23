@@ -2,13 +2,25 @@
 
 <div class="container">
   <div class="mt-1">
-    <h1>authorize user 1</h1>
+    <h1>You're all set!</h1>
   </div>
-  <p class="lead">
-    done!
-  </p>
+  <p class="lead">now send this link to a very special friend</p>
 
-  <div class="mt-1">
+  <input disabled type="text" value="{{link}}" id="share_link" />
+  <button onclick="copy()">copy link</button>
+
+  <script>
+    function copy() {
+      var copyText = document.getElementById("share_link");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+      /* Copy the text inside the text field */
+      navigator.clipboard.writeText(copyText.value);
+    }
+  </script>
+
+  <!-- <div class="mt-1">
     <h1>authorize user 2</h1>
   </div>
   <p class="lead">
@@ -23,6 +35,6 @@
 
   <a type="button" class="btn btn-default" href="/create_playlist"
     >press here!!</a
-  >
+  > -->
 </div>
 {% endblock %}

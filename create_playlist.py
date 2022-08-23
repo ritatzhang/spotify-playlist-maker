@@ -2,11 +2,7 @@
 # into a list
 # use track uri to add to playlist
 import json
-import os
 import requests
-import math
-from secrets import spotify_token, spotify_user_id, spotify_token2, spotify_other_id
-
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
@@ -17,11 +13,15 @@ import spotipy.util as util
 class CreatePlaylist:
     # user 1, we will create the playlist under this account
     def __init__(self):
-        self.user_id = spotify_user_id
+        self.user_id = []
+        self.token = []
         self.all_songs = set()
-        self.other_id = spotify_other_id
         self.other_all_songs = set()
         self.union_songs = set()
+
+    def set_user_info(self, id1, id2, token1, token2):
+        self.user_id = [id1, id2]
+        self.token = [token1, token2]
 
     def add_tracks(self, results):
         for item in results['items']:
@@ -34,13 +34,11 @@ class CreatePlaylist:
             self.other_all_songs.add(track['uri'])
 
     def get_all_songs_self(self):
-        sp = spotipy.Spotify(spotify_token)
+        sp = spotipy.Spotify(self.token[0])
         playlists = sp.user_playlists(self.user_id, limit=50)
 
         for playlist in playlists['items']:
             if playlist['owner']['id'] == self.user_id:
-                # print(playlist['name'])
-
                 results = sp.playlist(playlist['id'], fields="tracks,next")
                 tracks = results['tracks']
                 self.add_tracks(tracks)
@@ -55,12 +53,11 @@ class CreatePlaylist:
             self.add_tracks(results)
 
     def get_all_songs_other(self):
-        sp = spotipy.Spotify(spotify_token2)
+        sp = spotipy.Spotify(self.token[1])
         playlists = sp.user_playlists(self.other_id, limit=50)
 
         for playlist in playlists['items']:
             if playlist['owner']['id'] == self.other_id:
-                print(playlist['name'])
                 results = sp.playlist(playlist['id'], fields="tracks,next")
                 tracks = results['tracks']
                 self.add_tracks2(tracks)
@@ -74,33 +71,6 @@ class CreatePlaylist:
             results = sp.next(results)
             self.add_tracks2(results)
 
-    def create_playlist(self):
-        request_body = json.dumps({
-            "name": "your new playlist!!",
-            "description": "all of your shared favorite songs!",
-            "public": False
-        })
-
-        query = "https://api.spotify.com/v1/users/{}/playlists".format(
-            self.user_id)
-
-        response = requests.post(
-            query,
-            data=request_body,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(spotify_token)
-            }
-        )
-        response_json = response.json()
-        sp = spotipy.Spotify(spotify_token)
-        sp.user_playlist_change_details(
-            self.user_id, response_json["id"], collaborative=True)
-        sp = spotipy.Spotify(spotify_token2)
-        sp.user_playlist_follow_playlist(self.user_id, response_json["id"])
-
-        return response_json["id"]
-
     def get_union(self):
         self.union_songs = self.all_songs.intersection(self.other_all_songs)
 
@@ -108,9 +78,10 @@ class CreatePlaylist:
         self.get_all_songs_self()
         self.get_all_songs_other()
         self.get_union()
-        print(len(self.all_songs))
-        print(len(self.other_all_songs))
-        print(len(self.union_songs))
+        # print("CREATING PLAYLIST")
+        # print(len(self.all_songs))
+        # print(len(self.other_all_songs))
+        # print(len(self.union_songs))
         # for song in self.union_songs:
         # print(song)
         playlist_id = self.create_playlist()
@@ -140,7 +111,7 @@ class CreatePlaylist:
                 data=request_data,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer {}".format(spotify_token)
+                    "Authorization": "Bearer {}".format(self.token[1])
                 }
             )
 
