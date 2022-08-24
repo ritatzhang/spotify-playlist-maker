@@ -3,4 +3,4 @@ gunicorn
 requests
 spotipy
 mongoengine
-pymongo
+pymongo[srv]
