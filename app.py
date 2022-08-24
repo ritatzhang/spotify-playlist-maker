@@ -36,6 +36,7 @@ def auth1():
 
 @app.route("/auth2")
 def auth2():
+    print(spotify.AUTH_URL2)
     return redirect(spotify.AUTH_URL2)
 
 def valid_token(resp):
@@ -59,6 +60,7 @@ def callback():
 def callback2():
     print('CALLBACK2')
     auth_token = request.args['code']
+    print('STATE')
     global user1_db
     user1_db=request.args['state']
     print(request.args['state'])
@@ -116,7 +118,10 @@ def share():
     global user1_db
     user1_db = request.args.get('id')
     user1 = users.User.objects(id=user1_db).first()
+    print('SET STATE')
+    print(user1_db)
     spotify.set_state(user1_db)
+    print(spotify.STATE)
     return render_template('second_auth.html', display_name = user1.username)
 
 
