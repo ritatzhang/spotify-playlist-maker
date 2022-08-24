@@ -49,12 +49,10 @@ def callback():
     session['auth_header'] = auth_header
 
     user = spotify.get_users_profile_auth(auth_header)
-    print('BEGIN STORE')
     userid = mongo.store_user_auth(user['id'], user['display_name'], token, auth_header)
-    print('END STORE')
     user1 = {'id': userid}
     share_link = url + 'share?' + urlencode(user1)
-    print(share_link)
+
     return render_template('first_auth.html', link=share_link)
 
 @app.route("/callback2")
@@ -85,9 +83,10 @@ def create_playlist(token2, header2):
         playlist_data = spotify.get_users_playlists(i)
         user_id = profile_data['id']
         user_ids.append(user_id)
-
+        print('PLAYLIST')
         for play in playlist_data['items']:
             if play['owner']['id'] == user_id:
+                print(play['name'])
                 if(i == 0):
                     ult_playlist.add_tracks(
                         spotify.get_playlist_tracks(play['id'], i))
@@ -110,7 +109,8 @@ def create_playlist(token2, header2):
 def share():
     global user1_db
     user1_db = request.args.get('id')
-    return render_template('second_auth.html')
+    user1 = users.User.objects(id=user1_db).first()
+    return render_template('second_auth.html', display_name = user1.user_id)
 
 
 if __name__ == "__main__":

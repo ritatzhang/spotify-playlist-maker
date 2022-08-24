@@ -59,7 +59,7 @@ class CreatePlaylist:
             a.append(elem)
             count += 1
         union.append(a)
-
+        print('ADD SONGS')
         # had to do this cuz spotify only lets you add 100 songs at a time
         for songs in union:
             request_data = json.dumps(songs)
@@ -74,3 +74,4 @@ class CreatePlaylist:
                     "Authorization": "Bearer {}".format(spotify_token)
                 }
             )
+            print(response.json())
