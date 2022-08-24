@@ -47,7 +47,7 @@ auth_query_parameters1 = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI[0],
     "scope": SCOPE,
-    # "state": STATE,
+    "state": STATE,
     "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
@@ -56,7 +56,7 @@ auth_query_parameters2 = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI[1],
     "scope": SCOPE,
-    # "state": STATE,
+    "state": STATE,
     "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
@@ -78,6 +78,10 @@ AUTH_URL2 = "{}/?{}".format(SPOTIFY_AUTH_URL, URL_ARGS2)
 '''
 ACCESS_TOKEN = []
 AUTH_HEAD = []
+
+def set_state(state):
+    global STATE
+    STATE = state
 
 
 def authorize(auth_token, x):

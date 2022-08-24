@@ -59,6 +59,9 @@ def callback():
 def callback2():
     print('CALLBACK2')
     auth_token = request.args['code']
+    global user1_db
+    user1_db=request.args['state']
+    print(request.args['state'])
     token, auth_header = spotify.authorize(auth_token,1)
     session['auth_header'] = auth_header
     print('HERE1')
@@ -113,6 +116,7 @@ def share():
     global user1_db
     user1_db = request.args.get('id')
     user1 = users.User.objects(id=user1_db).first()
+    spotify.set_state(user1_db)
     return render_template('second_auth.html', display_name = user1.username)
 
 
