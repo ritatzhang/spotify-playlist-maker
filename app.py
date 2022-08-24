@@ -57,13 +57,16 @@ def callback():
 
 @app.route("/callback2")
 def callback2():
+    print('CALLBACK2')
     auth_token = request.args['code']
     token, auth_header = spotify.authorize(auth_token,1)
     session['auth_header'] = auth_header
+    print('HERE1')
     user = spotify.get_users_profile_auth(auth_header)
 
     global playlist_id
     playlist_id = spotify.create_playlist(user['id'], token)
+    print('HERE2')
     try:
         ult_playlist.make_playlist_collaborative(token, playlist_id, user['id'])
     except:
@@ -110,7 +113,7 @@ def share():
     global user1_db
     user1_db = request.args.get('id')
     user1 = users.User.objects(id=user1_db).first()
-    return render_template('second_auth.html', display_name = user1.user_id)
+    return render_template('second_auth.html', display_name = user1.username)
 
 
 if __name__ == "__main__":
