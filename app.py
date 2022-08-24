@@ -37,6 +37,8 @@ def auth1():
 @app.route("/auth2")
 def auth2():
     print('IN AUTH')
+    user1_db = request.args.get('id')
+    spotify.set_state(user1_db)
     print(spotify.STATE)
     print(spotify.AUTH_URL2)
     return redirect(spotify.AUTH_URL2)
@@ -124,7 +126,7 @@ def share():
     print(user1_db)
     spotify.set_state(user1_db)
     print(spotify.STATE)
-    return render_template('second_auth.html', display_name = user1.username)
+    return render_template('second_auth.html', display_name = user1.username, db_id = user1_db)
 
 
 if __name__ == "__main__":
