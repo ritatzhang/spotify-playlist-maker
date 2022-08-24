@@ -49,10 +49,12 @@ def callback():
     session['auth_header'] = auth_header
 
     user = spotify.get_users_profile_auth(auth_header)
-
+    print('BEGIN STORE')
     userid = mongo.store_user_auth(user['id'], user['display_name'], token, auth_header)
+    print('END STORE')
     user1 = {'id': userid}
     share_link = url + 'share?' + urlencode(user1)
+    print(share_link)
     return render_template('first_auth.html', link=share_link)
 
 @app.route("/callback2")
