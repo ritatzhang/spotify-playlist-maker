@@ -36,6 +36,8 @@ def auth1():
 
 @app.route("/auth2")
 def auth2():
+    print('IN AUTH')
+    print(spotify.STATE)
     print(spotify.AUTH_URL2)
     return redirect(spotify.AUTH_URL2)
 
