@@ -41,8 +41,8 @@ def auth2():
     spotify.set_state(user1_db)
     print(request.args)
     print(spotify.STATE)
-    print(spotify.AUTH_URL2)
-    return redirect(spotify.AUTH_URL2)
+    print(spotify.AUTH_URL2+user1_db)
+    return redirect(spotify.AUTH_URL2+user1_db)
 
 def valid_token(resp):
     return resp is not None and not 'error' in resp

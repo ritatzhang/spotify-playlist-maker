@@ -47,18 +47,18 @@ auth_query_parameters1 = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI[0],
     "scope": SCOPE,
-    "state": STATE,
     "show_dialog": SHOW_DIALOG_str,
-    "client_id": CLIENT_ID
+    "client_id": CLIENT_ID,
+    "state": STATE
 }
 
 auth_query_parameters2 = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI[1],
     "scope": SCOPE,
-    "state": STATE,
     "show_dialog": SHOW_DIALOG_str,
-    "client_id": CLIENT_ID
+    "client_id": CLIENT_ID,
+    "state": STATE
 }
 
 URL_ARGS1 = "&".join(["{}={}".format(key, urllibparse.quote(val))
